@@ -6,29 +6,25 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Random;
 
 public class GamePanel extends JPanel implements ActionListener {
-    private final int SCREEN_WIDTH_SIZE = 600;
-    private final int SCREEN_HEIGHT_SIZE = 600;
-    private final int UNIT_SIZE = 25;
-
-    final int GAME_UNITS = (SCREEN_WIDTH_SIZE * SCREEN_HEIGHT_SIZE) / ((int) Math.pow(UNIT_SIZE, 2));
-    final int DELAY = 100;
-
-    char direction = 'R';
-    boolean running = false;
-    Timer timer;
-
-    Snake snake = new Snake();
-    Apple apple = new Apple(SCREEN_WIDTH_SIZE, SCREEN_HEIGHT_SIZE, UNIT_SIZE);
-
     GamePanel() {
-        this.setBackground(Color.gray);
-        this.setPreferredSize(new Dimension(SCREEN_WIDTH_SIZE, SCREEN_HEIGHT_SIZE));
-        this.setFocusable(true);
-        this.addKeyListener(new MyKeyAdapter());
+        setPreferredSize(new Dimension(board.getScreenWidthSize(), board.getScreenHeightSize()));
+        setBackground(Color.gray);
+        setFocusable(true);
+        addKeyListener(new MyKeyAdapter());
         startGame();
     }
+
+    Random random = new Random();
+    Snake snake = new Snake();
+    Board board = new Board();
+    Apple apple = new Apple();
+    boolean running = false;
+    Timer timer;
+    final int DELAY = 100;
+
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -37,14 +33,14 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void draw(Graphics g) {
         g.setColor(Color.lightGray);
-        for (int i = 0; i < SCREEN_HEIGHT_SIZE / UNIT_SIZE; i++) {
-            g.drawLine(i * UNIT_SIZE, 0, i * UNIT_SIZE, SCREEN_HEIGHT_SIZE);
-            g.drawLine(0, i * UNIT_SIZE, SCREEN_WIDTH_SIZE, i * UNIT_SIZE);
+        for (int i = 0; i < board.getScreenHeightSize() / board.getUnitSize(); i++) {
+            g.drawLine(i * board.getUnitSize(), 0, i * board.getUnitSize(), board.getScreenHeightSize());
+            g.drawLine(0, i * board.getUnitSize(), board.getScreenWidthSize(), i * board.getUnitSize());
         }
 
         if (running) {
             g.setColor(Color.red);
-            g.fillOval(apple.getApplePositionX(), apple.getAppleY(), UNIT_SIZE, UNIT_SIZE);
+            g.fillOval(apple.getApplePositionX(), apple.getApplePositionY(), board.getUnitSize(), board.getUnitSize());
 
             for (int i = 0; i < snake.getBodyParts(); i++) {
                 if (i == 0) {
@@ -52,7 +48,7 @@ public class GamePanel extends JPanel implements ActionListener {
                 } else {
                     g.setColor(new Color(54, 182, 5));
                 }
-                g.fillRect(positionXPartsBody[i], positionYPartsBody[i], UNIT_SIZE, UNIT_SIZE);
+                g.fillRect(positionXPartsBody[i], positionYPartsBody[i], board.getUnitSize(), board.getUnitSize());
             }
         } else {
             gameOver(g);
@@ -66,23 +62,29 @@ public class GamePanel extends JPanel implements ActionListener {
         g.setFont(new Font("Arial", Font.BOLD, 40));
         FontMetrics metrics = getFontMetrics(g.getFont());
         g.drawString("Score: " + snake.applesEaten,
-                (SCREEN_WIDTH_SIZE - metrics.stringWidth("Score: " + snake.applesEaten)) / 2,
+                (board.getScreenWidthSize() - metrics.stringWidth("Score: " + snake.applesEaten)) / 2,
                 g.getFont().getSize());
     }
 
     public void startGame() {
-        apple.getPosition();
+        newApplePosition();
         running = true;
         timer = new Timer(DELAY, this);
         timer.start();
     }
 
+    public void newApplePosition() {
+        apple.setApplePositionX(random.nextInt((int) (board.getScreenWidthSize() /
+                board.getUnitSize())) * board.getUnitSize());
+        apple.setApplePositionY(random.nextInt((int) (board.getScreenHeightSize() /
+                board.getUnitSize())) * board.getUnitSize());
+    }
 
     public void checkApple() {
-        if ((positionXPartsBody[0] == apple.getApplePositionX()) && positionYPartsBody[0] == apple.getAppleY()) {
+        if ((positionXPartsBody[0] == apple.getApplePositionX()) && positionYPartsBody[0] == apple.getApplePositionY()) {
             snake.setBodyParts(snake.getBodyParts() + 1);
             snake.applesEaten++;
-            apple.getPosition();
+            newApplePosition();
         }
     }
 
@@ -101,7 +103,7 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         //check if head touches right border
-        if (positionXPartsBody[0] > SCREEN_WIDTH_SIZE) {
+        if (positionXPartsBody[0] > board.getScreenWidthSize()) {
             running = false;
         }
 
@@ -111,7 +113,7 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         //check if head touches bottom border
-        if (positionYPartsBody[0] > SCREEN_HEIGHT_SIZE) {
+        if (positionYPartsBody[0] > board.getScreenHeightSize()) {
             running = false;
         }
 
@@ -125,7 +127,8 @@ public class GamePanel extends JPanel implements ActionListener {
         g.setFont(new Font("Arial", Font.BOLD, 75));
         FontMetrics metricsOfGameOver = getFontMetrics(g.getFont());
         g.drawString("Game Over",
-                (SCREEN_WIDTH_SIZE - metricsOfGameOver.stringWidth("Game Over")) / 2, SCREEN_HEIGHT_SIZE / 2);
+                (board.getScreenWidthSize() - metricsOfGameOver.stringWidth("Game Over")) / 2,
+                board.getScreenHeightSize() / 2);
 
         drawScore(g);
     }
@@ -146,31 +149,32 @@ public class GamePanel extends JPanel implements ActionListener {
         public void keyPressed(KeyEvent e) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_LEFT:
-                    if (direction != 'R') {
-                        direction = 'L';
+                    if (snake.getDirection() != 'R') {
+                        snake.setDirection('L');
                     }
                     break;
                 case KeyEvent.VK_RIGHT:
-                    if (direction != 'L') {
-                        direction = 'R';
+                    if (snake.getDirection() != 'L') {
+                        snake.setDirection('R');
                     }
                     break;
                 case KeyEvent.VK_UP:
-                    if (direction != 'D') {
-                        direction = 'U';
+                    if (snake.getDirection() != 'D') {
+                        snake.setDirection('U');
                     }
                     break;
                 case KeyEvent.VK_DOWN:
-                    if (direction != 'U') {
-                        direction = 'D';
+                    if (snake.getDirection() != 'U') {
+                        snake.setDirection('D');
                     }
                     break;
             }
         }
     }
 
-    final private int[] positionXPartsBody = new int[GAME_UNITS];
-    final private int[] positionYPartsBody = new int[GAME_UNITS];
+
+    final private int[] positionXPartsBody = new int[board.getGameUnits()];
+    final private int[] positionYPartsBody = new int[board.getGameUnits()];
 
     public void move() {
         for (int i = snake.getBodyParts(); i > 0; i--) {
@@ -178,18 +182,18 @@ public class GamePanel extends JPanel implements ActionListener {
             positionYPartsBody[i] = positionYPartsBody[i - 1];
         }
 
-        switch (direction) {
+        switch (snake.getDirection()) {
             case 'U':
-                positionYPartsBody[0] = positionYPartsBody[0] - UNIT_SIZE;
+                positionYPartsBody[0] = positionYPartsBody[0] - board.getUnitSize();
                 break;
             case 'D':
-                positionYPartsBody[0] = positionYPartsBody[0] + UNIT_SIZE;
+                positionYPartsBody[0] = positionYPartsBody[0] + board.getUnitSize();
                 break;
             case 'L':
-                positionXPartsBody[0] = positionXPartsBody[0] - UNIT_SIZE;
+                positionXPartsBody[0] = positionXPartsBody[0] - board.getUnitSize();
                 break;
             case 'R':
-                positionXPartsBody[0] = positionXPartsBody[0] + UNIT_SIZE;
+                positionXPartsBody[0] = positionXPartsBody[0] + board.getUnitSize();
                 break;
         }
     }

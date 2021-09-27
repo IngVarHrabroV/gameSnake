@@ -2,29 +2,29 @@ package com.hrabrov;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.util.Random;
 
 public class GamePanel extends JPanel implements ActionListener {
-    GamePanel() {
-        setPreferredSize(new Dimension(board.getScreenWidthSize(), board.getScreenHeightSize()));
-        setBackground(Color.gray);
-        setFocusable(true);
-        addKeyListener(new MyKeyAdapter());
-        startGame();
-    }
-
     Random random = new Random();
-    Snake snake = new Snake();
     Board board = new Board();
     Apple apple = new Apple();
     boolean running = false;
     Timer timer;
     final int DELAY = 100;
 
+    private final int gameUnits = (board.getScreenWidthSize() * board.getScreenHeightSize()) /
+            ((int) Math.pow(board.getUnitSize(), 2));
+
+    Snake snake = new Snake(gameUnits);
+
+    GamePanel() {
+        setPreferredSize(new Dimension(board.getScreenWidthSize(), board.getScreenHeightSize()));
+        setBackground(Color.gray);
+        setFocusable(true);
+        startGame();
+        this.addKeyListener(new MyKeyAdapter());
+    }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -42,13 +42,13 @@ public class GamePanel extends JPanel implements ActionListener {
             g.setColor(Color.red);
             g.fillOval(apple.getApplePositionX(), apple.getApplePositionY(), board.getUnitSize(), board.getUnitSize());
 
-            for (int i = 0; i < snake.getBodyParts(); i++) {
+            for (int i = 0; i < snake.getCurrentSizeOfSnake(); i++) {
                 if (i == 0) {
                     g.setColor(Color.green);
                 } else {
                     g.setColor(new Color(54, 182, 5));
                 }
-                g.fillRect(positionXPartsBody[i], positionYPartsBody[i], board.getUnitSize(), board.getUnitSize());
+                g.fillRect(positionXOfPartsSnake[i], positionYOfPartsSnake[i], board.getUnitSize(), board.getUnitSize());
             }
         } else {
             gameOver(g);
@@ -81,8 +81,9 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     public void checkApple() {
-        if ((positionXPartsBody[0] == apple.getApplePositionX()) && positionYPartsBody[0] == apple.getApplePositionY()) {
-            snake.setBodyParts(snake.getBodyParts() + 1);
+        if ((positionXOfPartsSnake[0] == apple.getApplePositionX())
+                && positionYOfPartsSnake[0] == apple.getApplePositionY()) {
+            snake.setCurrentSizeOfSnake(snake.getCurrentSizeOfSnake() + 1);
             snake.applesEaten++;
             newApplePosition();
         }
@@ -90,30 +91,30 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void checkCollisions() {
         //check if head collides with body
-        for (int i = snake.getBodyParts(); i > 0; i--) {
-            if ((positionXPartsBody[0] == positionXPartsBody[i])
-                    && (positionYPartsBody[0] == positionYPartsBody[i])) {
+        for (int i = snake.getCurrentSizeOfSnake(); i > 0; i--) {
+            if ((positionXOfPartsSnake[0] == positionXOfPartsSnake[i])
+                    && (positionYOfPartsSnake[0] == positionYOfPartsSnake[i])) {
                 running = false;
             }
         }
 
         //check if head touches left border
-        if (positionXPartsBody[0] < 0) {
+        if (positionXOfPartsSnake[0] < 0) {
             running = false;
         }
 
         //check if head touches right border
-        if (positionXPartsBody[0] > board.getScreenWidthSize()) {
+        if (positionXOfPartsSnake[0] > board.getScreenWidthSize()) {
             running = false;
         }
 
         //check if head touches top border
-        if (positionYPartsBody[0] < 0) {
+        if (positionYOfPartsSnake[0] < 0) {
             running = false;
         }
 
         //check if head touches bottom border
-        if (positionYPartsBody[0] > board.getScreenHeightSize()) {
+        if (positionYOfPartsSnake[0] > board.getScreenHeightSize()) {
             running = false;
         }
 
@@ -133,8 +134,11 @@ public class GamePanel extends JPanel implements ActionListener {
         drawScore(g);
     }
 
+
+
     @Override
     public void actionPerformed(ActionEvent e) {
+
         if (running) {
             move();
             checkApple();
@@ -144,9 +148,9 @@ public class GamePanel extends JPanel implements ActionListener {
         repaint();
     }
 
-    public class MyKeyAdapter extends KeyAdapter {
-        @Override
+    class MyKeyAdapter extends KeyAdapter {
         public void keyPressed(KeyEvent e) {
+
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_LEFT:
                     if (snake.getDirection() != 'R') {
@@ -173,27 +177,28 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
 
-    final private int[] positionXPartsBody = new int[board.getGameUnits()];
-    final private int[] positionYPartsBody = new int[board.getGameUnits()];
+
+    private final int[] positionXOfPartsSnake = new int[gameUnits];
+    private final int[] positionYOfPartsSnake = new int[gameUnits];
 
     public void move() {
-        for (int i = snake.getBodyParts(); i > 0; i--) {
-            positionXPartsBody[i] = positionXPartsBody[i - 1];
-            positionYPartsBody[i] = positionYPartsBody[i - 1];
+        for (int i = snake.getCurrentSizeOfSnake(); i > 0; i--) {
+            positionXOfPartsSnake[i] = positionXOfPartsSnake[i - 1];
+            positionYOfPartsSnake[i] = positionYOfPartsSnake[i - 1];
         }
 
         switch (snake.getDirection()) {
             case 'U':
-                positionYPartsBody[0] = positionYPartsBody[0] - board.getUnitSize();
+                positionYOfPartsSnake[0] = positionYOfPartsSnake[0] - board.getUnitSize();
                 break;
             case 'D':
-                positionYPartsBody[0] = positionYPartsBody[0] + board.getUnitSize();
+                positionYOfPartsSnake[0] = positionYOfPartsSnake[0] + board.getUnitSize();
                 break;
             case 'L':
-                positionXPartsBody[0] = positionXPartsBody[0] - board.getUnitSize();
+                positionXOfPartsSnake[0] = positionXOfPartsSnake[0] - board.getUnitSize();
                 break;
             case 'R':
-                positionXPartsBody[0] = positionXPartsBody[0] + board.getUnitSize();
+                positionXOfPartsSnake[0] = positionXOfPartsSnake[0] + board.getUnitSize();
                 break;
         }
     }

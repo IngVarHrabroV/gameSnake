@@ -5,11 +5,11 @@ public class Board {
     private final int screenHeightSize = 600;
     private final int unitSize = 25;
 
-    public int getScreenWidthSize() {
+    public int getWidthSize() {
         return screenWidthSize;
     }
 
-    public int getScreenHeightSize() {
+    public int getHeightSize() {
         return screenHeightSize;
     }
 

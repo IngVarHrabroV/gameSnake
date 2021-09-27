@@ -1,26 +1,18 @@
 package com.hrabrov;
 
 public class Snake {
-    private char direction = 'R';
+    Direction direction = Direction.RIGHT;
+    int applesEaten;
 
-    Snake(int gameUnit) {
-        maxSnakeSize = gameUnit;
-    }
-
-    public char getDirection() {
+    public Direction getDirection() {
         return direction;
     }
 
-    public void setDirection(char direction) {
+    public void setDirection(Direction direction) {
         this.direction = direction;
     }
 
-
-
     private int currentSizeOfSnake = 6;
-
-    private int maxSnakeSize;
-
 
     public int getCurrentSizeOfSnake() {
         return currentSizeOfSnake;
@@ -29,12 +21,4 @@ public class Snake {
     public void setCurrentSizeOfSnake(int currentSizeOfSnake) {
         this.currentSizeOfSnake = currentSizeOfSnake;
     }
-
-
-    public void setMaxSnakeSize(int maxSnakeSize) {
-        this.maxSnakeSize = maxSnakeSize;
-    }
-
-
-    int applesEaten;
 }

@@ -7,6 +7,7 @@ public class Apple {
     public int getApplePositionX() {
         return applePositionX;
     }
+
     public void setApplePositionX(int applePositionX) {
         this.applePositionX = applePositionX;
     }
@@ -14,6 +15,7 @@ public class Apple {
     public int getApplePositionY() {
         return applePositionY;
     }
+
     public void setApplePositionY(int applePositionY) {
         this.applePositionY = applePositionY;
     }

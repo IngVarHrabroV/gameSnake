@@ -27,7 +27,7 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     private int calculateAmountOfGameUnit(int widthSize, int heightSize, int unitSize) {
-        return widthSize * heightSize / ((int) Math.pow(board.getUnitSize(), 2));
+        return widthSize * heightSize / ((int) Math.pow(unitSize, 2));
     }
 
     public void paintComponent(Graphics g) {

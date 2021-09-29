@@ -7,3 +7,5 @@ https://www.youtube.com/watch?v=bI6e6qjJ8JQ
 - write game on Java
 - look ar JFrame
 - improve OOP knowledge 
+
+UPD: refactor code: i divided code on class as required by OOP
